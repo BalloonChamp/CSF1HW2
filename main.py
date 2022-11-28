@@ -199,6 +199,7 @@ class OAM():
     # appropriate.
     def load(self, filename):
         f = open(filename, "r")
+        f.readlines()
 
     # The dump() method prints out a representation of the state of
     # the machine, followed by whatever is in memory and the label
