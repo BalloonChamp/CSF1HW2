@@ -1,0 +1,9 @@
+LDA stdin
+BRS MyInc
+BRS MyInc
+BRS MyInc
+STA stdout
+HLT
+MyInc, NOOP
+INC
+BRI MyInc

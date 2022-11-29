@@ -1,0 +1,29 @@
+LDA stdin
+STA 50
+SET 2
+SUB 50
+NEG
+BRZ true
+BRP more
+false, SET 0
+STA stdout
+HLT
+true, SET 1
+STA stdout
+HLT
+more, SET 2
+loop, STA 51
+BRS check
+LDA 51
+MLT 51
+SUB 50
+BRP true
+LDA 51
+INC
+BR loop
+check, NOOP
+LDA 50
+sub, SUB 51
+BRZ false
+BRP sub
+BRI check

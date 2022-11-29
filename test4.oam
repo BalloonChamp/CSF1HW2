@@ -1,0 +1,16 @@
+set 0      # [1] Set accumulator to 0
+sta 100    # [2] Initialize result memory location
+lda 0      # [3] Read in initial value
+brz 14     # [4] Value is zero, you're finished (also works for zero input)
+sta 101    # [5] Store current value in memory; we'll inc/dec this value
+add 100    # [6] Add result into value
+sta 100    # [7] Store back into result
+lda 101    # [8] Reload current value
+brp 12     # [9] If positive, skip to decrement
+inc        # [10] Negative, so increment value
+br 13      # [11] Skip around positive case
+dec        # [12] Positive, so decrement value
+br 3       # [13] Go back and do it again
+lda 100    # [14] Reload result into accumulator
+sta 0      # [15] Print it out
+hlt	   # [16]

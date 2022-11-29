@@ -1,0 +1,4 @@
+lda 0 
+inc    # Increment
+sta 0 
+hlt   

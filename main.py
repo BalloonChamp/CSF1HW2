@@ -5,7 +5,7 @@
 #  2) it has not been shared with anyone outside the intructional team.
 #
 def signed():
-    return (["hawkid"])
+    return (["pwkamp"])
 
 
 ######################################################################
@@ -76,8 +76,10 @@ class OAM():
         if self.debug:
             print("  Execute: IR = '{}'".format(self.ir))
         try:
+            #print('self.' + self.ir[0] + '()')
             exec('self.' + self.ir[0] + '()')
-        except:
+        except Exception as e:
+            print(e)
             if self.debug:
                 print("Abort: ill-formed instruction IR = '{}'".format(self.ir))
             self.pc = 0
@@ -86,7 +88,10 @@ class OAM():
     # which may be an integer or a reference label, such as may be
     # found in an instruction, and returns an int.
     def resolve(self, address):
-        pass
+        try:
+            return int(address)
+        except ValueError as e:
+            return int(self.labels[address])
 
     # The read() method returns a value from the memory location
     # specified by the AR. If the AR value is 0, it returns a value
@@ -95,60 +100,85 @@ class OAM():
     # value is a number, it returns the value of memory at that
     # location. If the memory location does not exist, it returns '?'.
     def read(self):
-        pass
+        address = self.resolve(self.ar)
+        if address == 0:
+            return int(input("Input: "))
+        else:
+            return self.mem[address]
 
-    # The write() copies the value a value from the ACC into the
+    # The write() copies the value from the ACC into the
     # location specified by the AR. If the AR value is 0, it prints
     # the value to the screen. If the AR value is a label, it copies
     # the value from the ACC into the label's reference. Otherwise, if
     # the AR value is a number, it copies the value from the ACC to
     # memory at that location.
     def write(self):
-        pass
+        address = self.resolve(self.ar)
+        if address == 0:
+            print("Output: " + str(self.acc))
+        else:
+            while True:
+                try:
+                    self.mem[address] = self.acc
+                    break
+                except IndexError as e:
+                    self.mem.append('?')
 
     # The add() method adds the B register to ACC and stores the
     # result in ACC.
     def add(self):
-        pass
+        self.acc = int(self.acc)
+        self.b = int(self.mem[self.resolve(self.ir[1])])
+        self.acc += self.b
 
     # The sub() method subtracts the B register from ACC and stores
     # the result in ACC.
     def sub(self):
-        pass
+        self.acc = int(self.acc)
+        self.b = int(self.mem[self.resolve(self.ir[1])])
+        self.acc -= self.b
 
     # The mlt() method multiplies the B register with ACC and stores
     # the result in ACC.
     def mlt(self):
-        pass
+        self.acc = int(self.acc)
+        self.b = int(self.mem[self.resolve(self.ir[1])])
+        self.acc *= self.b
 
     # The div() method divides the ACC with the B register and stores
     # the result in ACC.
     def div(self):
-        pass
+        self.acc = int(self.acc)
+        self.b = int(self.mem[self.resolve(self.ir[1])])
+        self.acc /= self.b
 
     # The set() method sets the ACC to the specified value from the
     # IR.
     def set(self):
-        pass
+        self.acc = int(self.ir[1])
 
     # The neg() method inverts the sign of the ACC.
     def neg(self):
-        pass
+        self.acc = int(self.acc)
+        self.acc = -self.acc
 
     # The inc() method adds 1 to the ACC.
     def inc(self):
-        pass
+        self.acc = int(self.acc)
+        self.acc += 1
 
     # The dec() method subtracts 1 from the ACC.
     def dec(self):
-        pass
+        self.acc = int(self.acc)
+        self.acc -= 1
 
     # The lda() method sets the AR to the address from the IR and
     # reads the corresponding value from memory into ACC. Note that
     # the value in the IR might be a label, an integer, or 0 (meaning
     # read input). Use the resolve() method to disambiguate.
     def lda(self):
-        pass
+        self.ar = self.resolve(self.ir[1])
+        self.acc = self.read()
 
     # The sta() method sets the AR to the address from the IR and
     # stores the value of ACC into the corresponding value in
@@ -156,38 +186,41 @@ class OAM():
     # integer, or 0 (meaning read input). Use the resolve() method to
     # disambiguate.
     def sta(self):
-        pass
+        self.ar = self.resolve(self.ir[1])
+        self.write()
 
     # The br() method sets the PC to the specified value.
     def br(self):
-        pass
+        self.pc = self.resolve(self.ir[1])
 
     # The brp() method sets the PC to the specified value if and only
     # if ACC > 0.
     def brp(self):
-        pass
+        if self.acc > 0:
+            self.br()
 
     # The brz() method sets the PC to the specified value if and only
     # if ACC == 0.
     def brz(self):
-        pass
+        if self.acc == 0:
+            self.br()
 
     # The bri() method sets the PC to the value of memory at the
     # location referenced. Note that the value in memory might be a
     # label, an integer, or 0 (meaning read input). Use the resolve()
     # method to disambiguate.
     def bri(self):
-        pass
+        self.pc = self.mem[self.resolve(self.ir[1])]
 
     # The brs() method stores the PC value in the memory location
     # referenced and then branches to one beyond that location
     # (remember the intervening increment phase).
     def brs(self):
-        pass
+        self.mem[self.resolve(self.ir[1])] = self.pc
 
     # The hlt() method stops the machine by setting the PC to 0.
     def hlt(self):
-        pass
+        self.pc = 0
 
     # The load(filename) method takes a file of OAM machine/assembly
     # code, initializes the OAM memory and label reference table, and
@@ -198,11 +231,43 @@ class OAM():
     # extend self.mem) as a tuple of one or two strings, as
     # appropriate.
     def load(self, filename):
+        self.ar = 1
+        self.mem.append('?')
         f = open(filename, "r")
-        f.readlines()
+        s = f.readlines()
+        for line in s:
+            line = line.lower()
+            if line.find("#") != -1:
+                line = line[0:line.find("#")]
+            if line in "\n\b\t\r" or line in "" or line is None:
+                continue
+            if re.search("\w+,\s+([A-Za-z]{2,4})(\s+\w+)?", line) is not None:
+                split = re.split(",\s+", re.search("\w+,\s+([A-Za-z]{2,4})(\s+\w+)?", line).group())
+                self.labels[split[0]] = self.ar
+                inst = tuple(re.split("\s+", split[1]))
+                # print(str(inst))
+                self.acc = inst
+                self.write()
+
+            elif re.search("([A-Za-z]{2,3})( \w+)?", line) is not None:
+                instStr = re.search("([A-Za-z]{2,3})( \w+)?", line).group()
+                inst = tuple(re.split("\s+", instStr))
+                # print(str(inst))
+                self.acc = inst
+                self.write()
+
+            else:
+                pass
+            self.ar += 1
 
     # The dump() method prints out a representation of the state of
     # the machine, followed by whatever is in memory and the label
     # references.
     def dump(self):
-        print("PC={} IR={} AR={} ACC={} B={}".format(self.pc, self.ir, self.ar, self.acc, self.b))
+        print("State: PC={}; ACC={}; B={}; AR={}; IR={}".format(self.pc, self.acc, self.b, self.ar, self.ir))
+        print("Memory:")
+        for i in range(len(self.mem)):
+            print("  {}: {}".format(i,str(self.mem[i])))
+        print("Reference Table:")
+        for x in self.labels:
+            print("  {}: {}".format(x, str(self.labels[x])))

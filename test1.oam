@@ -1,0 +1,8 @@
+1. LDA 0                  # read in value of A from keyboard
+2. STA 10                 # store it in memory location 100
+3. LDA 0                  # read in value of B from keyboard
+4. ADD 10                 # add A to B
+5. STA 10                 # store A+B in memory location 100
+6. MLT 10                 # multiply A+B by itself
+7. STA 0                  # write ( A + B ) ^ 2 to screen
+8. HLT                    # halt

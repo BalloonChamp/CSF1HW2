@@ -1,0 +1,11 @@
+lda 0
+sta 15
+mlt 15
+sta 15
+set 3
+sta 16
+lda 0
+mlt 16
+add 15
+sta 0
+hlt

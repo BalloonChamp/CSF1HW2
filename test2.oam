@@ -1,0 +1,6 @@
+1.         set 10	# [1] Set ACC to 3
+2. return, sta stdout	# [2] Print ACC to screen (label this statement "return")
+3.         dec		# [3] Decrement ACC
+4.         brz quit	# [4] Branch to statement labeled "quit" if ACC==0
+5.         br return	# [5] Branch to statement labeled "return"
+6. quit,   hlt		# [6] Halt (label this statement "quit")
